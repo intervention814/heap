@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "api_heap.h"
 
 #define COMMAND_ALLOC "alloc";
 
@@ -44,7 +45,9 @@ int main(int argc, char** argv)
 
 void handle_free()
 {
-
+	int block_id_to_free;
+	scanf("%d", &block_id_to_free);
+	printf("Freeing %d\r\n", block_id_to_free);
 }
 
 void handle_alloc()
