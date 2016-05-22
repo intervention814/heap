@@ -21,11 +21,14 @@ typedef struct HeapListElement {
 void handle_alloc();
 void handle_free();
 void handle_view();
+void handle_view_api();
 void list_add(const char* ptr);
-void list_delete(const char* ptr);
+void list_delete(int block_to_delete);
+void list_view();
 
 // Head of the heap list...
 AllocHeapListElement* allocdHeapList = NULL;
+static int allocd_heap_block_id = 0;
 
 int main(int argc, char** argv)
 {
@@ -46,21 +49,27 @@ int main(int argc, char** argv)
 			printf("Unable to read command.\r\n");
 			continue;
 		}
-		if (strcmp(command, "alloc") == 0)
+		else if (strcmp(command, "alloc") == 0)
 		{
 			printf("Handling alloc...\r\n");
 			handle_alloc();
 		}
-		if (strcmp(command, "free") == 0) {
+		else if (strcmp(command, "free") == 0) {
 			printf("Handling free...\r\n");
 			handle_free();
 		}
-		if (strcmp(command, "view") == 0) {
+		else if (strcmp(command, "viewlist") == 0) {
 			printf("Handling view...\r\n");
 			handle_view();
 		}
-		if (strcmp(command, "q") == 0) {
+		else if (strcmp(command, "viewapi") == 0) {
+			printf("Handling view API...\r\n");
+			handle_view_api();
+		}
+		else if (strcmp(command, "q") == 0) {
 			break;
+		} else {
+			printf("Available commands are: viewapi, viewlist, alloc, free, q\r\n");
 		}
 	}
 }
@@ -95,20 +104,25 @@ void handle_alloc()
 
 void handle_view()
 {
-	printf("Viewing heap...\r\n");
+	list_view();
+}
+
+void handle_view_api() {
 	api_view();
 }
 
 void list_add(const char* ptr) {
 	// Insert ptr into heap list
+	AllocHeapListElement* cur = allocdHeapList;
 	if (allocdHeapList == NULL) {
 		allocdHeapList = malloc(sizeof(AllocHeapListElement));
 		allocdHeapList->next = NULL;
 		allocdHeapList->ptr_heap = ptr;
+		allocdHeapList->block_id = allocd_heap_block_id++;
 		return;
 	}
 
-	AllocHeapListElement* cur = allocdHeapList;
+	// Advance list until we find position for new element
 	while (cur->next != NULL) {
 		cur = cur->next;
 	}
@@ -117,9 +131,10 @@ void list_add(const char* ptr) {
 	cur = cur->next;
 	cur->next = NULL;
 	cur->ptr_heap = ptr;
+	cur->block_id = allocd_heap_block_id++;
 }
 
-void list_delete(const char* ptr) {
+void list_delete(int block_to_delete) {
 	AllocHeapListElement* cur = allocdHeapList;
 	AllocHeapListElement* prev = NULL;
 
@@ -130,12 +145,12 @@ void list_delete(const char* ptr) {
 	}
 
 	// Find the ptr in our list
-	while (cur->ptr_heap != ptr){
+	while (cur->block_id != block_to_delete){
 		if (cur->next != NULL) {
 			prev = cur;
 			cur = cur->next;
 		} else {
-			printf("Ptr %p not in list.\r\n", ptr);
+			printf("Block id %d not in list.\r\n", block_to_delete);
 			return;
 		}
 	}
@@ -145,5 +160,24 @@ void list_delete(const char* ptr) {
 		prev->next = cur->next;
 	}
 
+	// Call the api_free function...
+	api_free(cur->ptr_heap);
+
 	free(cur);
+}
+
+void list_view() {
+	AllocHeapListElement* cur = allocdHeapList;
+
+		printf("Viewing heap...\r\n");
+		if (cur == NULL) {
+			printf("No items allocated.\r\n");
+			return;
+		}
+
+		while (cur != NULL) {
+			printf("Block ID: %d\r\n", cur->block_id);
+			printf("Size: %lu\r\n", api_get_size(cur->ptr_heap));
+			cur = cur->next;
+		}
 }

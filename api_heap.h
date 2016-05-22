@@ -11,6 +11,7 @@
 int api_init(size_t underlying_heap_size);
 void api_view();
 char* api_alloc(size_t size);
-void api_free(char* ptr);
+void api_free(const char* ptr);
+size_t api_get_size(const char* ptr);
 
 #endif /* API_HEAP_H_ */
