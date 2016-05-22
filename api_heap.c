@@ -7,11 +7,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "api_heap.h"
 
 char* g_heap_ptr;
 
 int api_init(size_t underlying_heap_size) {
+	printf("Initializing heap with %lu bytes\r\n", underlying_heap_size);
 	g_heap_ptr = malloc(underlying_heap_size);
 	if (g_heap_ptr == NULL) {
 		return 0;
