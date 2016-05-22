@@ -60,6 +60,7 @@ char* api_alloc(size_t size) {
 		}
 	}
 	// Do fragment...
+	size_t size_left_in_block_after_alloc = cur->data_size - (size + sizeof(HeapHeader));
 	return NULL;
 }
 
