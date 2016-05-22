@@ -51,6 +51,15 @@ void api_view() {
 }
 
 char* api_alloc(size_t size) {
+	HeapHeader* cur = (HeapHeader*)g_heap_ptr;
+	while ((cur->data_size < (size + sizeof(HeapHeader))) || cur->is_in_use == 1) {
+		cur = cur->next;
+		if (cur == NULL) {
+			printf("No blocks large enough for %lu bytes.\r\n", size);
+			return NULL;
+		}
+	}
+	// Do fragment...
 	return NULL;
 }
 

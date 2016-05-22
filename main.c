@@ -97,6 +97,10 @@ void handle_alloc()
 
 	printf("Allocating %lu bytes...\r\n", len_to_alloc);
 	ptr = api_alloc(len_to_alloc);
+	if (ptr == NULL) {
+		printf("Unable to alloc %lu bytes.\r\n", len_to_alloc);
+		return;
+	}
 
 	// Add the ptr to the heap list...
 	list_add(ptr);
