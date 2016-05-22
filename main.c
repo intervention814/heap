@@ -27,7 +27,7 @@ void list_delete(int block_to_delete);
 void list_view();
 
 // Head of the heap list...
-AllocHeapListElement* allocdHeapList = NULL;
+AllocHeapListElement* allocated_heap_blocks= NULL;
 static int allocd_heap_block_id = 0;
 
 int main(int argc, char** argv)
@@ -117,12 +117,12 @@ void handle_view_api() {
 
 void list_add(const char* ptr) {
 	// Insert ptr into heap list
-	AllocHeapListElement* cur = allocdHeapList;
-	if (allocdHeapList == NULL) {
-		allocdHeapList = malloc(sizeof(AllocHeapListElement));
-		allocdHeapList->next = NULL;
-		allocdHeapList->ptr_heap = ptr;
-		allocdHeapList->block_id = allocd_heap_block_id++;
+	AllocHeapListElement* cur = allocated_heap_blocks;
+	if (allocated_heap_blocks == NULL) {
+		allocated_heap_blocks = malloc(sizeof(AllocHeapListElement));
+		allocated_heap_blocks->next = NULL;
+		allocated_heap_blocks->ptr_heap = ptr;
+		allocated_heap_blocks->block_id = allocd_heap_block_id++;
 		return;
 	}
 
@@ -139,11 +139,11 @@ void list_add(const char* ptr) {
 }
 
 void list_delete(int block_to_delete) {
-	AllocHeapListElement* cur = allocdHeapList;
+	AllocHeapListElement* cur = allocated_heap_blocks;
 	AllocHeapListElement* prev = NULL;
 
 	// If we have no list, ptr won't be in it...
-	if (allocdHeapList == NULL) {
+	if (allocated_heap_blocks == NULL) {
 		printf("No list yet.\r\n");
 		return;
 	}
@@ -171,7 +171,7 @@ void list_delete(int block_to_delete) {
 }
 
 void list_view() {
-	AllocHeapListElement* cur = allocdHeapList;
+	AllocHeapListElement* cur = allocated_heap_blocks;
 
 		printf("Viewing heap...\r\n");
 		if (cur == NULL) {
