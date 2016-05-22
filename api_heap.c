@@ -16,7 +16,6 @@ typedef struct HeapHeader {
 	size_t data_size;
 	struct HeapHeader* next;
 	struct HeapHeader* prev;
-	char is_in_use; // is allocated?
 } HeapHeader;
 
 int api_init(size_t underlying_heap_size) {
@@ -28,8 +27,8 @@ int api_init(size_t underlying_heap_size) {
 	memset(g_heap_ptr, 0, underlying_heap_size);
 	HeapHeader* hdr = (HeapHeader*)g_heap_ptr;
 	hdr->data_size = underlying_heap_size;
-	hdr->is_in_use = 0;
-	hdr->next = hdr->prev = NULL;
+	hdr->next = NULL;
+	hdr->prev = NULL;
 	return 1;
 }
 
@@ -40,10 +39,9 @@ void api_view() {
 	}
 	HeapHeader* cur = (HeapHeader*)g_heap_ptr;
 	while (cur != NULL) {
-		printf("Addr: [%p] : Size: [%lu] : In Use: [%d] : Next: [%p] : Prev: [%p]\r\n",
+		printf("Addr: [%p] : Size: [%lu] : Next: [%p] : Prev: [%p]\r\n",
 				cur,
 				cur->data_size,
-				cur->is_in_use,
 				cur->next,
 				cur->prev);
 		cur = cur->next;
@@ -52,7 +50,16 @@ void api_view() {
 
 char* api_alloc(size_t size) {
 	HeapHeader* cur = (HeapHeader*)g_heap_ptr;
-	while ((cur->data_size < (size + sizeof(HeapHeader))) || cur->is_in_use == 1) {
+
+	// If we only have one block...
+	if (cur->next == NULL) {
+		if (cur->data_size >= (size + sizeof(HeapHeader))) {
+			printf("One block available of right size...\r\n");
+			HeapHeader* newHeader = (HeapHeader*)((char*)(cur + size + sizeof(HeapHeader)));
+		}
+	}
+
+	while (cur->data_size < (size + sizeof(HeapHeader))) {
 		cur = cur->next;
 		if (cur == NULL) {
 			printf("No blocks large enough for %lu bytes.\r\n", size);
@@ -60,7 +67,6 @@ char* api_alloc(size_t size) {
 		}
 	}
 	// Do fragment...
-	size_t size_left_in_block_after_alloc = cur->data_size - (size + sizeof(HeapHeader));
 	return NULL;
 }
 
