@@ -162,6 +162,12 @@ void list_delete(int block_to_delete) {
 		allocated_heap_blocks = NULL;
 	}
 
+	// if we're freeing the head of the list
+	if (prev == NULL) {
+		printf("Freeing head of allocated list...\r\n");
+		allocated_heap_blocks = cur->next;
+	}
+
 	// Call the api_free function...
 	api_free(cur->ptr_heap);
 
