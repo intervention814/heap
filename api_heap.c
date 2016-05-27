@@ -39,9 +39,10 @@ void api_view() {
 	}
 	HeapHeader* cur = (HeapHeader*)g_heap_ptr;
 	while (cur != NULL) {
-		printf("Addr: [%p] : Size: [%lu] : Next: [%p] : Prev: [%p]\r\n",
+		printf("Addr: [%p] : Size: [%lu] (header size [%lu]) : Next: [%p] : Prev: [%p]\r\n",
 				cur,
 				cur->data_size,
+				sizeof(HeapHeader),
 				cur->next,
 				cur->prev);
 		cur = cur->next;
@@ -55,18 +56,23 @@ char* api_alloc(size_t size) {
 	if (cur->next == NULL) {
 		if (cur->data_size >= (size + sizeof(HeapHeader))) {
 			printf("One block available of right size...\r\n");
-			HeapHeader* newHeader = (HeapHeader*)((char*)(cur + size + sizeof(HeapHeader)));
+			// Update the size of this chunk taking into consideration that
+			// there is a new header, for the new block being allocated, taking up space now.
+			cur->data_size -= (size + sizeof(HeapHeader));
+
+			// Create a new header for the return
+			HeapHeader* newHeaderRet = (HeapHeader*)((char*)(cur + size + sizeof(HeapHeader)));
+			newHeaderRet->data_size = size;
+			newHeaderRet->next = NULL;
+			newHeaderRet->prev = NULL;
+			//g_heap_ptr = (char*)newHeaderRet;
+
+			printf("Created new 'only block left' at %p (size %lu)\r\n", g_heap_ptr, newHeaderRet->data_size);
+			return (char*)newHeaderRet + sizeof(HeapHeader);
 		}
 	}
 
-	while (cur->data_size < (size + sizeof(HeapHeader))) {
-		cur = cur->next;
-		if (cur == NULL) {
-			printf("No blocks large enough for %lu bytes.\r\n", size);
-			return NULL;
-		}
-	}
-	// Do fragment...
+
 	return NULL;
 }
 
@@ -75,7 +81,8 @@ void api_free(const char* ptr) {
 }
 
 size_t api_get_size(const char* ptr) {
-	return 0;
+	HeapHeader* hdr = (HeapHeader*)(ptr - sizeof(HeapHeader));
+	return hdr->data_size;
 }
 
 

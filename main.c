@@ -51,19 +51,15 @@ int main(int argc, char** argv)
 		}
 		else if (strcmp(command, "alloc") == 0)
 		{
-			printf("Handling alloc...\r\n");
 			handle_alloc();
 		}
 		else if (strcmp(command, "free") == 0) {
-			printf("Handling free...\r\n");
 			handle_free();
 		}
 		else if (strcmp(command, "viewlist") == 0) {
-			printf("Handling view...\r\n");
 			handle_view();
 		}
 		else if (strcmp(command, "viewapi") == 0) {
-			printf("Handling view API...\r\n");
 			handle_view_api();
 		}
 		else if (strcmp(command, "q") == 0) {
@@ -149,7 +145,7 @@ void list_delete(int block_to_delete) {
 	}
 
 	// Find the ptr in our list
-	while (cur->block_id != block_to_delete){
+	while (cur->block_id != block_to_delete) {
 		if (cur->next != NULL) {
 			prev = cur;
 			cur = cur->next;
@@ -162,6 +158,8 @@ void list_delete(int block_to_delete) {
 	// Fix our prev ptr to point to our next, since 'we' are being freed.
 	if (prev != NULL) {
 		prev->next = cur->next;
+	} else {
+		allocated_heap_blocks = NULL;
 	}
 
 	// Call the api_free function...
@@ -173,15 +171,15 @@ void list_delete(int block_to_delete) {
 void list_view() {
 	AllocHeapListElement* cur = allocated_heap_blocks;
 
-		printf("Viewing heap...\r\n");
+		printf("Viewing allocated blocks...\r\n");
 		if (cur == NULL) {
-			printf("No items allocated.\r\n");
+			printf("No blocks allocated.\r\n");
 			return;
 		}
 
 		while (cur != NULL) {
-			printf("Block ID: %d\r\n", cur->block_id);
-			printf("Size: %lu\r\n", api_get_size(cur->ptr_heap));
+			printf("Block ID: [%d]\r\n", cur->block_id);
+			printf("Size: [%lu]\r\n", api_get_size(cur->ptr_heap));
 			cur = cur->next;
 		}
 }
