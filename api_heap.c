@@ -49,7 +49,7 @@ void api_view() {
 	}
 }
 
-char* api_alloc(size_t size) {
+void* api_alloc(size_t size) {
 	HeapHeader* cur = (HeapHeader*)g_heap_ptr;
 
 	// If we only have one block...
@@ -76,11 +76,11 @@ char* api_alloc(size_t size) {
 	return NULL;
 }
 
-void api_free(const char* ptr) {
+void api_free(void* ptr) {
 	return;
 }
 
-size_t api_get_size(const char* ptr) {
+size_t api_get_size(const unsigned char* ptr) {
 	HeapHeader* hdr = (HeapHeader*)(ptr - sizeof(HeapHeader));
 	return hdr->data_size;
 }

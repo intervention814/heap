@@ -11,10 +11,10 @@
 #include "api_heap.h"
 
 // Struct defining what each heap element looks like in the manipulate list view...
-typedef struct HeapListElement {
-	int block_id;
-	const char* ptr_heap;
-	struct HeapListElement* next;
+typedef struct AllocHeapListElement {
+	unsigned int block_id;
+	const unsigned char* ptr_heap;
+	struct AllocHeapListElement* next;
 } AllocHeapListElement;
 
 // Prototypes for functions
@@ -22,16 +22,15 @@ void handle_alloc();
 void handle_free();
 void handle_view();
 void handle_view_api();
-void list_add(const char* ptr);
-void list_delete(int block_to_delete);
+void list_add(const unsigned char* ptr);
+void list_delete(unsigned int block_to_delete);
 void list_view();
 
 // Head of the heap list...
-AllocHeapListElement* allocated_heap_blocks= NULL;
-static int allocd_heap_block_id = 0;
+AllocHeapListElement* allocated_heap_blocks = NULL;
+static unsigned int allocd_heap_block_id = 0;
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 	char command[256];
 
 	// Init the heap
@@ -42,36 +41,31 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	while (1)
-	{
+	while (1) {
 		printf("Enter command: ");
 		if (scanf("%s", command) != 1) {
 			printf("Unable to read command.\r\n");
 			continue;
-		}
-		else if (strcmp(command, "alloc") == 0)
-		{
+		} else if (strcmp(command, "alloc") == 0) {
 			handle_alloc();
-		}
-		else if (strcmp(command, "free") == 0) {
+		} else if (strcmp(command, "free") == 0) {
 			handle_free();
-		}
-		else if (strcmp(command, "viewlist") == 0) {
+		} else if (strcmp(command, "viewlist") == 0) {
 			handle_view();
-		}
-		else if (strcmp(command, "viewapi") == 0) {
+		} else if (strcmp(command, "viewapi") == 0) {
 			handle_view_api();
-		}
-		else if (strcmp(command, "q") == 0) {
+		} else if (strcmp(command, "q") == 0) {
 			break;
 		} else {
-			printf("Available commands are: viewapi, viewlist, alloc, free, q\r\n");
+			printf(
+					"Available commands are: viewapi, viewlist, alloc, free, q\r\n");
 		}
 	}
+
+	return 0;
 }
 
-void handle_free()
-{
+void handle_free() {
 	int block_id_to_free;
 	if (scanf("%d", &block_id_to_free) != 1) {
 		printf("Unable to read block ID to free.\r\n");
@@ -81,9 +75,8 @@ void handle_free()
 	list_delete(block_id_to_free);
 }
 
-void handle_alloc()
-{
-	char* ptr = NULL;
+void handle_alloc() {
+	void * ptr = NULL;
 	size_t len_to_alloc;
 
 	if (scanf("%lu", &len_to_alloc) != 1) {
@@ -102,8 +95,7 @@ void handle_alloc()
 	list_add(ptr);
 }
 
-void handle_view()
-{
+void handle_view() {
 	list_view();
 }
 
@@ -111,9 +103,10 @@ void handle_view_api() {
 	api_view();
 }
 
-void list_add(const char* ptr) {
+void list_add(const unsigned char* ptr) {
 	// Insert ptr into heap list
 	AllocHeapListElement* cur = allocated_heap_blocks;
+
 	if (allocated_heap_blocks == NULL) {
 		allocated_heap_blocks = malloc(sizeof(AllocHeapListElement));
 		allocated_heap_blocks->next = NULL;
@@ -134,7 +127,7 @@ void list_add(const char* ptr) {
 	cur->block_id = allocd_heap_block_id++;
 }
 
-void list_delete(int block_to_delete) {
+void list_delete(unsigned int block_to_delete) {
 	AllocHeapListElement* cur = allocated_heap_blocks;
 	AllocHeapListElement* prev = NULL;
 
@@ -169,7 +162,7 @@ void list_delete(int block_to_delete) {
 	}
 
 	// Call the api_free function...
-	api_free(cur->ptr_heap);
+	api_free((void*)cur->ptr_heap);
 
 	free(cur);
 }
@@ -177,15 +170,15 @@ void list_delete(int block_to_delete) {
 void list_view() {
 	AllocHeapListElement* cur = allocated_heap_blocks;
 
-		printf("Viewing allocated blocks...\r\n");
-		if (cur == NULL) {
-			printf("No blocks allocated.\r\n");
-			return;
-		}
+	printf("Viewing allocated blocks...\r\n");
+	if (cur == NULL) {
+		printf("No blocks allocated.\r\n");
+		return;
+	}
 
-		while (cur != NULL) {
-			printf("Block ID: [%d]\r\n", cur->block_id);
-			printf("Size: [%lu]\r\n", api_get_size(cur->ptr_heap));
-			cur = cur->next;
-		}
+	while (cur != NULL) {
+		printf("Block ID: [%d]\r\n", cur->block_id);
+		printf("Size: [%lu]\r\n", api_get_size(cur->ptr_heap));
+		cur = cur->next;
+	}
 }
