@@ -61,7 +61,7 @@ void* api_alloc(size_t size) {
 			cur->data_size -= (size + sizeof(HeapHeader));
 
 			// Create a new header for the return
-			HeapHeader* newHeaderRet = (HeapHeader*)((char*)(cur + size + sizeof(HeapHeader)));
+			HeapHeader* newHeaderRet = (HeapHeader*)((char*)(cur + cur->data_size + sizeof(HeapHeader)));
 			newHeaderRet->data_size = size;
 			newHeaderRet->next = NULL;
 			newHeaderRet->prev = NULL;
