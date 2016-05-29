@@ -10,7 +10,7 @@
 #include <string.h>
 #include "api_heap.h"
 
-char* g_heap_ptr;
+unsigned char* g_heap_ptr;
 
 int api_init(size_t underlying_heap_size) {
 	printf("Initializing heap with %lu bytes\r\n", underlying_heap_size);
@@ -58,8 +58,11 @@ void* api_alloc(size_t size) {
 			HeapHeader* newHeaderRet = (HeapHeader*)((char*)(cur + cur->data_size + sizeof(HeapHeader)));
 			newHeaderRet->data_size = size;
 			newHeaderRet->next = NULL;
-			//newHeaderRet->prev = NULL;
-			//g_heap_ptr = (char*)newHeaderRet;
+
+			//if (newHeaderRet == (HeapHeader*)g_heap_ptr) {
+			//	printf("Using entire free list block!\r\n");
+			//	g_heap_ptr = NULL;
+			//}
 
 			printf("Created new 'from only block left' hdr at %p (size %lu)\r\n", (char*)newHeaderRet, newHeaderRet->data_size);
 			return (char*)newHeaderRet + sizeof(HeapHeader);
@@ -72,6 +75,11 @@ void* api_alloc(size_t size) {
 
 void api_free(void* ptr) {
 	HeapHeader* hdr = (HeapHeader*)(ptr - sizeof(HeapHeader));
+	if (g_heap_ptr == NULL) {
+		printf("Free list is empty, using free'd ptr as head of freelist.\r\n");
+		g_heap_ptr = (unsigned char*)hdr;
+		return;
+	}
 	printf("Freeing block of size: [%lu] at [%p]\r\n", hdr->data_size, (unsigned char*)hdr);
 
 	HeapHeader* prevContigousBlock = api_get_prev_coalesc_block(hdr);
@@ -100,7 +108,7 @@ void api_coallesce_prev(HeapHeader* prev, HeapHeader* hdr) {
 
 HeapHeader* api_get_prev_coalesc_block(HeapHeader* hdr) {
 	if (g_heap_ptr == NULL) {
-		printf("No blocks in free list.\r\n");
+		printf("No blocks in free list\r\n");
 		return NULL;
 	}
 	HeapHeader* cur = (HeapHeader*)g_heap_ptr;
